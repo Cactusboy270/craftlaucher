@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8"/>
+  <meta http-equiv="Content-Security-Policy" content="
+    default-src 'self' 'unsafe-inline';
+    img-src 'self' https://crafatar.com https://mc-heads.net https://media.forgecdn.net https://cdn.modrinth.com data: blob:;
+    font-src https://fonts.gstatic.com;
+    style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+    script-src 'self' 'unsafe-inline';
+    connect-src
+      https://api.modrinth.com
+      https://api.curseforge.com
+      https://crafatar.com
+      https://meta.fabricmc.net
+      https://meta.quiltmc.org
+      https://files.minecraftforge.net
+      https://maven.minecraftforge.net
+      https://api.minecraftservices.com
+      https://sessionserver.mojang.com
+      https://authserver.mojang.com
+      https://login.microsoftonline.com
+      https://login.live.com
+      https://user.auth.xboxlive.com
+      https://xsts.auth.xboxlive.com
+      https://launchermeta.mojang.com
+      https://piston-meta.mojang.com
+      https://resources.download.minecraft.net
+      https://libraries.minecraft.net;
+  ">
+  <title>CraftLauncher</title>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="titlebar">
+  <div class="titlebar-left">
+    <div class="titlebar-logo">⛏ CraftLauncher</div>
+  </div>
+  <div class="titlebar-drag"></div>
+  <div class="titlebar-btns">
+    <button class="tbtn-win" onclick="window.launcher.window.minimize()">─</button>
+    <button class="tbtn-win" onclick="window.launcher.window.maximize()">□</button>
+    <button class="tbtn-win close" onclick="window.launcher.window.close()">✕</button>
+  </div>
+</div>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="login-bg">
+    <div class="login-particles" id="particles"></div>
+  </div>
+  <div class="login-card">
+    <div class="login-logo">
+      <div class="login-icon">⛏</div>
+      <h1>CraftLauncher</h1>
+      <p>Launcher Minecraft nouvelle génération</p>
+    </div>
+    <button class="ms-login-btn" id="login-btn" onclick="doLogin()">
+      <div class="ms-logo">
+        <div style="background:#f25022"></div><div style="background:#7fba00"></div>
+        <div style="background:#00a4ef"></div><div style="background:#ffb900"></div>
+      </div>
+      Se connecter avec Microsoft
+    </button>
+    <div class="login-note">Authentification officielle · Votre mot de passe n'est jamais partagé</div>
+    <div id="login-error"></div>
+  </div>
+</div>
+
+<!-- UPDATE BANNER -->
+<div class="update-banner hidden" id="update-banner">
+  <div class="update-text">
+    <span class="update-dot"></span>
+    Mise à jour disponible — <strong id="update-version"></strong>
+  </div>
+  <div style="display:flex;gap:8px;">
+    <button class="btn-sm btn-green" id="btn-install-update">Installer et redémarrer</button>
+    <button class="btn-sm" onclick="document.getElementById('update-banner').classList.add('hidden')">Plus tard</button>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app" class="hidden">
+  <div class="sidebar">
+    <div class="sidebar-logo">⛏ CL</div>
+    <nav class="nav">
+      <div class="nav-group">Launcher</div>
+      <div class="nav-item active" data-page="home">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1" y="8" width="6" height="7" rx="1.5" fill="currentColor"/><rect x="9" y="1" width="6" height="14" rx="1.5" fill="currentColor"/></svg>
+        Accueil
+      </div>
+      <div class="nav-item" data-page="instances">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1" y="1" width="6" height="6" rx="1.5" stroke="currentColor" stroke-width="1.5"/><rect x="9" y="1" width="6" height="6" rx="1.5" stroke="currentColor" stroke-width="1.5"/><rect x="1" y="9" width="6" height="6" rx="1.5" stroke="currentColor" stroke-width="1.5"/><rect x="9" y="9" width="6" height="6" rx="1.5" stroke="currentColor" stroke-width="1.5"/></svg>
+        Instances
+      </div>
+      <div class="nav-item" data-page="modpacks">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 1l2.5 4.5h4.5l-3.5 3 1.5 4.5L8 10.5l-5 2.5 1.5-4.5-3.5-3h4.5z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>
+        Modpacks
+      </div>
+      <div class="nav-item" data-page="stats">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 12l3-4 3 3 5-8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Statistiques
+      </div>
+      <div class="nav-group admin-group hidden" id="nav-admin-group">Admin</div>
+      <div class="nav-item hidden" data-page="admin" id="nav-admin">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="5.5" r="3" stroke="#4ade80" stroke-width="1.5"/><path d="M2 14c0-3.3 2.7-6 6-6s6 2.7 6 6" stroke="#4ade80" stroke-width="1.5" stroke-linecap="round"/></svg>
+        Admin
+        <span class="admin-pill">ADMIN</span>
+      </div>
+    </nav>
+    <div class="sidebar-bottom">
+      <div class="account-widget" id="account-widget">
+        <img id="skin-avatar" class="skin-avatar" src="" alt=""/>
+        <div id="skin-fallback" class="skin-fallback">?</div>
+        <div class="account-info">
+          <div class="account-name" id="account-name">—</div>
+          <div class="account-role" id="account-role">Microsoft</div>
+        </div>
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 4l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      </div>
+      <div class="account-dropdown hidden" id="account-dropdown">
+        <div class="dropdown-item" id="btn-change-account">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7a5 5 0 1 0 10 0A5 5 0 0 0 2 7zM7 4v6M4 7h6" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+          Changer de compte
+        </div>
+        <div class="dropdown-item" id="btn-profile">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="5" r="3" stroke="currentColor" stroke-width="1.2"/><path d="M1 13c0-3.3 2.7-6 6-6s6 2.7 6 6" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+          Mon profil
+        </div>
+        <div class="dropdown-divider"></div>
+        <div class="dropdown-item danger" id="btn-logout">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M5 2H3a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h2M9 10l4-3-4-3M6 7h7" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Se déconnecter
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="topbar-title" id="page-title">Accueil</div>
+      <div class="topbar-actions">
+        <button class="btn-outline" id="btn-new-instance">+ Nouvelle instance</button>
+        <button class="btn-outline" id="btn-upload-instance">↑ Importer</button>
+      </div>
+    </div>
+    <div class="content" id="content"></div>
+    <div class="launch-bar">
+      <div class="launch-bar-left">
+        <div class="launch-instance-info">
+          <div class="launch-instance-name" id="launch-name">Aucune instance sélectionnée</div>
+          <div class="launch-instance-meta" id="launch-meta">—</div>
+        </div>
+        <div class="launch-progress hidden" id="launch-progress">
+          <div class="launch-progress-bar">
+            <div class="launch-progress-fill" id="progress-fill"></div>
+          </div>
+          <div class="launch-progress-label" id="progress-label"></div>
+        </div>
+      </div>
+      <button class="btn-launch" id="btn-launch" disabled>
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 2l10 6-10 6V2z" fill="currentColor"/></svg>
+        Lancer Minecraft
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL NOUVELLE INSTANCE -->
+<div class="modal-overlay hidden" id="modal-new-instance">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Nouvelle instance</div>
+      <button class="modal-close" onclick="closeModal('modal-new-instance')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>Nom</label>
+        <input class="form-input" id="ni-name" placeholder="Ma survie, Skyblock..."/>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Version Minecraft</label>
+          <select class="form-input" id="ni-version"><option value="1.21.4">1.21.4 (chargement...)</option></select>
+        </div>
+        <div class="form-group">
+          <label>Mod loader</label>
+          <select class="form-input" id="ni-loader">
+            <option value="vanilla">Vanilla</option>
+            <option value="forge">Forge</option>
+            <option value="fabric">Fabric</option>
+            <option value="neoforge">NeoForge</option>
+            <option value="quilt">Quilt</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>RAM (Go)</label>
+          <input class="form-input" id="ni-ram" type="number" min="1" max="32" value="4"/>
+        </div>
+        <div class="form-group">
+          <label>Icône</label>
+          <div class="icon-picker" id="icon-picker">
+            <span class="icon-opt selected" data-icon="🌿">🌿</span>
+            <span class="icon-opt" data-icon="⚔️">⚔️</span>
+            <span class="icon-opt" data-icon="🏔️">🏔️</span>
+            <span class="icon-opt" data-icon="⚙️">⚙️</span>
+            <span class="icon-opt" data-icon="🔮">🔮</span>
+            <span class="icon-opt" data-icon="🌊">🌊</span>
+            <span class="icon-opt" data-icon="🏭">🏭</span>
+            <span class="icon-opt" data-icon="🐉">🐉</span>
+          </div>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Arguments JVM (avancé)</label>
+        <input class="form-input" id="ni-jvm" value="-XX:+UseG1GC -XX:+ParallelRefProcEnabled -XX:MaxGCPauseMillis=200"/>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-outline" onclick="closeModal('modal-new-instance')">Annuler</button>
+      <button class="btn-green" id="btn-create-instance">Créer l'instance</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL EDIT INSTANCE -->
+<div class="modal-overlay hidden" id="modal-edit-instance">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Modifier l'instance</div>
+      <button class="modal-close" onclick="closeModal('modal-edit-instance')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>Nom</label>
+        <input class="form-input" id="edit-name"/>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>RAM (Go)</label>
+          <input class="form-input" id="edit-ram" type="number" min="1" max="32"/>
+        </div>
+        <div class="form-group">
+          <label>Version Java</label>
+          <select class="form-input" id="edit-java">
+            <option>Java 21 (recommandé 1.20.5+)</option>
+            <option>Java 17 (1.17-1.20.4)</option>
+            <option>Java 8 (1.12.2 et avant)</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Arguments JVM</label>
+        <input class="form-input" id="edit-jvm"/>
+      </div>
+      <div class="form-group">
+        <label>Résolution</label>
+        <div class="form-row">
+          <input class="form-input" id="edit-width" type="number" placeholder="1280" style="flex:1"/>
+          <span style="align-self:center;color:var(--text3);">×</span>
+          <input class="form-input" id="edit-height" type="number" placeholder="720" style="flex:1"/>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-outline btn-danger-outline" id="btn-delete-instance">Supprimer</button>
+      <div style="display:flex;gap:8px;">
+        <button class="btn-outline" onclick="closeModal('modal-edit-instance')">Annuler</button>
+        <button class="btn-green" id="btn-save-instance">Enregistrer</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast hidden" id="toast"></div>
+
+<script src="app.js"></script>
+</body>
+</html>

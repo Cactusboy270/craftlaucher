@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>CraftLauncher</title>
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' https://crafatar.com https://mc-heads.net data:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; script-src 'self'"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Syne:wght@400;500;600&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+  <!-- TITLEBAR -->
+  <div id="titlebar">
+    <div id="titlebar-drag">
+      <span class="app-logo">Craft<span>Launcher</span></span>
+    </div>
+    <div id="titlebar-controls">
+      <button onclick="window.launcher.minimize()">─</button>
+      <button onclick="window.launcher.maximize()">□</button>
+      <button id="close-btn" onclick="window.launcher.close()">✕</button>
+    </div>
+  </div>
+
+  <!-- LOGIN SCREEN -->
+  <div id="login-screen">
+    <div class="login-grid"></div>
+    <div class="login-glow"></div>
+    <div class="login-box">
+      <div class="login-logo">Craft<span>Launcher</span></div>
+      <div class="login-sub">// connexion requise</div>
+      <div class="login-avatar" id="login-avatar">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+          <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="#4ade80" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <p class="login-desc">Connectez-vous avec votre compte Microsoft pour accéder à votre launcher Minecraft.<br>Votre mot de passe est géré exclusivement par Microsoft.</p>
+      <button id="ms-login-btn" onclick="doLogin()">
+        <div class="ms-logo">
+          <div style="background:#f25022"></div><div style="background:#7fba00"></div>
+          <div style="background:#00a4ef"></div><div style="background:#ffb900"></div>
+        </div>
+        Se connecter avec Microsoft
+      </button>
+      <div id="login-error" class="login-error"></div>
+      <div class="login-note">Auth officielle Xbox Live · Mojang · Aucun mot de passe stocké</div>
+    </div>
+  </div>
+
+  <!-- APP -->
+  <div id="app" class="hidden">
+    <div class="sidebar">
+      <div class="sidebar-top">
+        <div class="app-name">Craft<span>Launcher</span></div>
+        <div class="app-ver">v1.0.0 · java edition</div>
+      </div>
+      <nav class="nav">
+        <div class="nav-group">Principal</div>
+        <div class="nav-item active" data-page="home">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><rect x="1" y="8" width="6" height="7" rx="1" fill="currentColor"/><rect x="9" y="1" width="6" height="14" rx="1" fill="currentColor"/></svg>
+          Accueil
+        </div>
+        <div class="nav-item" data-page="instances">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><rect x="1" y="1" width="6" height="6" rx="1" stroke="currentColor" stroke-width="1.2"/><rect x="9" y="1" width="6" height="6" rx="1" stroke="currentColor" stroke-width="1.2"/><rect x="1" y="9" width="6" height="6" rx="1" stroke="currentColor" stroke-width="1.2"/><rect x="9" y="9" width="6" height="6" rx="1" stroke="currentColor" stroke-width="1.2"/></svg>
+          Instances
+        </div>
+        <div class="nav-item" data-page="mods">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M8 1l2 4h4l-3.5 3 1.5 4L8 10l-4 2 1.5-4L2 5h4z" stroke="currentColor" stroke-width="1.1" stroke-linejoin="round"/></svg>
+          Mods & Modpacks
+        </div>
+        <div class="nav-item" data-page="stats">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M2 12l3.5-4 3 3 5-7" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Statistiques
+        </div>
+        <div class="nav-group admin-nav hidden" id="admin-nav-group">Admin</div>
+        <div class="nav-item hidden" data-page="admin" id="admin-nav-item">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="6" r="3" stroke="#4ade80" stroke-width="1.2"/><path d="M13 13c0-2.76-2.24-5-5-5s-5 2.24-5 5" stroke="#4ade80" stroke-width="1.2" stroke-linecap="round"/></svg>
+          Panneau admin
+          <span class="admin-pill">ADMIN</span>
+        </div>
+      </nav>
+      <div class="sidebar-account">
+        <div class="account-row" id="account-row" onclick="toggleAccountMenu()">
+          <img id="ac-avatar" class="ac-avatar" src="" alt=""/>
+          <div class="ac-avatar-fallback hidden" id="ac-avatar-fallback"></div>
+          <div class="ac-info">
+            <div class="ac-name" id="ac-name">—</div>
+            <div class="ac-role" id="ac-role">Joueur</div>
+          </div>
+          <svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M2 4l3.5 3.5L9 4" stroke="#4a5568" stroke-width="1.2" stroke-linecap="round"/></svg>
+          <div class="account-menu hidden" id="account-menu">
+            <div class="ac-menu-item" onclick="changeAccount(event)">
+              <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><path d="M4 7h6M7 4v6" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+              Changer de compte
+            </div>
+            <div class="ac-menu-divider"></div>
+            <div class="ac-menu-item danger" onclick="doLogout(event)">
+              <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><path d="M5 2H3a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h2M10 10l3-3-3-3M6 7h7" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              Se déconnecter
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="main">
+      <div class="topbar">
+        <div class="page-title" id="page-title">Accueil</div>
+        <div class="topbar-btns">
+          <button class="tbtn" onclick="showPage('stats')">Statistiques</button>
+          <button class="tbtn tbtn-g" onclick="openModal('modal-new-inst')">+ Nouvelle instance</button>
+        </div>
+      </div>
+
+      <div class="content">
+        <!-- PAGE ACCUEIL -->
+        <div class="page active" id="page-home">
+          <div class="stats-grid">
+            <div class="stat"><div class="stat-label">Temps total</div><div class="stat-value" id="stat-time">0<span class="stat-unit">h</span></div></div>
+            <div class="stat"><div class="stat-label">Sessions</div><div class="stat-value" id="stat-sessions">0</div></div>
+            <div class="stat"><div class="stat-label">Instances</div><div class="stat-value" id="stat-instances">0</div></div>
+          </div>
+          <div class="sec-label">Instance sélectionnée</div>
+          <div id="home-selected-instance">
+            <div class="empty-state">Aucune instance — <span class="link" onclick="openModal('modal-new-inst')">créez-en une</span></div>
+          </div>
+        </div>
+
+        <!-- PAGE INSTANCES -->
+        <div class="page hidden" id="page-instances">
+          <div class="sec-label">Mes instances</div>
+          <div class="instances-grid" id="instances-grid">
+            <div class="inst-card add-inst" onclick="openModal('modal-new-inst')">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+              <span>Nouvelle instance</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- PAGE MODS -->
+        <div class="page hidden" id="page-mods">
+          <div id="admin-mod-box" class="admin-box hidden">
+            <div class="admin-hdr">
+              <svg width="12" height="12" viewBox="0 0 14 14" fill="none"><path d="M7 1l1.5 3h3l-2.5 2 1 3L7 7.5 4 9l1-3L2.5 4h3z" stroke="#4ade80" stroke-width="1.1" stroke-linejoin="round"/></svg>
+              <span class="admin-hdr-title">Ajouter un modpack (admin)</span>
+            </div>
+            <div class="input-row">
+              <input class="input" placeholder="Nom du modpack..." id="mp-name"/>
+              <input class="input" placeholder="Version MC..." id="mp-ver" style="width:110px"/>
+            </div>
+            <div class="input-row">
+              <input class="input" placeholder="URL CurseForge / Modrinth..." id="mp-url"/>
+            </div>
+            <button class="btn btn-g" onclick="addModpack()">+ Publier</button>
+          </div>
+          <div class="sec-label">Modpacks disponibles</div>
+          <div id="modpacks-list"></div>
+        </div>
+
+        <!-- PAGE STATS -->
+        <div class="page hidden" id="page-stats">
+          <div class="stats-grid">
+            <div class="stat"><div class="stat-label">Total</div><div class="stat-value">0<span class="stat-unit">h</span></div></div>
+            <div class="stat"><div class="stat-label">Ce mois</div><div class="stat-value">0<span class="stat-unit">h</span></div></div>
+            <div class="stat"><div class="stat-label">Moyenne/j</div><div class="stat-value">0<span class="stat-unit">h</span></div></div>
+          </div>
+          <div class="sec-label">Par instance</div>
+          <div class="empty-state">Aucune session enregistrée pour l'instant.</div>
+        </div>
+
+        <!-- PAGE ADMIN -->
+        <div class="page hidden" id="page-admin">
+          <div class="admin-box" style="margin-bottom:14px">
+            <div class="admin-hdr">
+              <svg width="12" height="12" viewBox="0 0 14 14" fill="none"><path d="M7 1l1.5 3h3l-2.5 2 1 3L7 7.5 4 9l1-3L2.5 4h3z" stroke="#4ade80" stroke-width="1.1" stroke-linejoin="round"/></svg>
+              <span class="admin-hdr-title">Compte admin actif</span>
+            </div>
+            <div class="admin-info-grid">
+              <span class="muted">Pseudo</span><span id="adm-username">—</span>
+              <span class="muted">UUID</span><span id="adm-uuid" class="mono small green">—</span>
+              <span class="muted">Skin</span><span id="adm-skin" class="mono small">—</span>
+              <span class="muted">Rôle</span><span class="tag tag-admin">ADMIN</span>
+            </div>
+          </div>
+          <div class="sec-label">Actions</div>
+          <div class="card" style="margin-bottom:8px">
+            <div class="row-between">
+              <div><div class="item-title">Gérer les versions</div><div class="item-sub">Ajouter ou retirer des versions MC</div></div>
+              <button class="btn btn-g" onclick="openModal('modal-add-ver')">+ Version</button>
+            </div>
+          </div>
+          <div class="card" style="margin-bottom:8px">
+            <div class="row-between">
+              <div><div class="item-title">Gérer les modpacks</div><div class="item-sub">Publier ou retirer des modpacks</div></div>
+              <button class="btn btn-g" onclick="showPage('mods')">Gérer</button>
+            </div>
+          </div>
+          <div class="card">
+            <div class="item-title" style="margin-bottom:8px">Promouvoir un admin</div>
+            <div class="input-row">
+              <input class="input" placeholder="UUID Minecraft du joueur..." id="new-admin-uuid"/>
+              <button class="btn btn-g" onclick="addAdmin()">Promouvoir</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- LAUNCH BAR -->
+      <div class="launch-bar">
+        <div class="launch-info">
+          <div id="launch-inst-label" class="launch-inst-label">Aucune instance sélectionnée</div>
+          <div class="progress-bar hidden" id="prog-bar"><div class="progress-fill" id="prog-fill"></div></div>
+        </div>
+        <button class="launch-btn" id="launch-btn" onclick="launchGame()">
+          <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M3 1.5l8 4.5-8 4.5V1.5z" fill="currentColor"/></svg>
+          Lancer Minecraft
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL NOUVELLE INSTANCE -->
+  <div class="modal-wrap hidden" id="modal-new-inst">
+    <div class="modal">
+      <div class="modal-title">Nouvelle instance</div>
+      <div class="modal-sub">Configuration indépendante de jeu</div>
+      <div class="modal-label">Nom</div>
+      <input class="input" id="ni-name" placeholder="Ma survie, Skyblock..."/>
+      <div class="modal-label">Version Minecraft</div>
+      <select class="input" id="ni-ver">
+        <option>1.21.4</option><option>1.21.1</option><option>1.20.4</option>
+        <option>1.20.1</option><option>1.19.4</option><option>1.12.2</option>
+      </select>
+      <div class="modal-label">Mod loader</div>
+      <select class="input" id="ni-loader">
+        <option value="vanilla">Vanilla</option>
+        <option value="forge">Forge</option>
+        <option value="fabric">Fabric</option>
+        <option value="quilt">Quilt</option>
+      </select>
+      <div class="modal-label">RAM allouée</div>
+      <select class="input" id="ni-ram">
+        <option value="2G">2 Go</option><option value="4G" selected>4 Go</option>
+        <option value="6G">6 Go</option><option value="8G">8 Go</option>
+        <option value="12G">12 Go</option>
+      </select>
+      <div class="modal-label">Icône</div>
+      <div class="icon-picker" id="icon-picker">
+        <span onclick="pickIcon(this)" class="selected">🌿</span>
+        <span onclick="pickIcon(this)">⚙️</span><span onclick="pickIcon(this)">⚔️</span>
+        <span onclick="pickIcon(this)">🏔️</span><span onclick="pickIcon(this)">🔮</span>
+        <span onclick="pickIcon(this)">🏭</span><span onclick="pickIcon(this)">🌊</span>
+        <span onclick="pickIcon(this)">🐉</span>
+      </div>
+      <div class="modal-actions">
+        <button class="btn" onclick="closeModal('modal-new-inst')">Annuler</button>
+        <button class="btn btn-g" onclick="createInstance()">Créer l'instance</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL ADD VERSION (admin) -->
+  <div class="modal-wrap hidden" id="modal-add-ver">
+    <div class="modal">
+      <div class="modal-title">Ajouter une version</div>
+      <div class="modal-sub">Visible par tous les joueurs</div>
+      <div class="modal-label">Identifiant</div>
+      <input class="input" id="av-id" placeholder="Ex: 1.21.5, Forge 1.21.1..."/>
+      <div class="modal-label">Type</div>
+      <select class="input" id="av-type">
+        <option value="r">Release</option>
+        <option value="s">Snapshot</option>
+        <option value="m">Modded (Forge / Fabric)</option>
+      </select>
+      <div class="modal-actions">
+        <button class="btn" onclick="closeModal('modal-add-ver')">Annuler</button>
+        <button class="btn btn-g" onclick="saveVersion()">Publier</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast hidden" id="toast"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
