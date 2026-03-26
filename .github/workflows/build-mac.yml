@@ -19,13 +19,14 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Build macOS
-        run: npx electron-builder --mac --publish never
+      - name: Build macOS arm64
+        run: npx electron-builder --mac dmg --arm64 --publish never
 
-      - name: Upload DMG
+      - name: Build macOS x64
+        run: npx electron-builder --mac dmg --x64 --publish never
+
+      - name: Upload DMGs
         uses: actions/upload-artifact@v4
         with:
           name: craftlauncher-macos
-          path: |
-            dist/*.dmg
-            dist/*.blockmap
+          path: dist/*.dmg
