@@ -1,10 +1,10 @@
-name: Build macOS
+name: Build macOS Portable
 
 on:
   workflow_dispatch:
 
 jobs:
-  build-mac:
+  build-mac-portable:
     runs-on: macos-latest
 
     steps:
@@ -19,14 +19,16 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Build macOS arm64
-        run: npx electron-builder --mac dmg --arm64 --publish never
+      - name: Build macOS app
+        run: npx electron-builder --mac dir --publish never
 
-      - name: Build macOS x64
-        run: npx electron-builder --mac dmg --x64 --publish never
+      - name: Zip app
+        run: |
+          cd dist/mac
+          ditto -c -k --sequesterRsrc --keepParent CraftLauncher.app ../../CraftLauncher-mac-portable.zip
 
-      - name: Upload DMGs
+      - name: Upload portable app
         uses: actions/upload-artifact@v4
         with:
-          name: craftlauncher-macos
-          path: dist/*.dmg
+          name: craftlauncher-mac-portable
+          path: CraftLauncher-mac-portable.zip
