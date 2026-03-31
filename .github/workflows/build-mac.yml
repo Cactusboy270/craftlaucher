@@ -1,4 +1,4 @@
-name: Build macOS Portable
+name: Build macOS Portable x64
 
 on:
   workflow_dispatch:
@@ -20,15 +20,15 @@ jobs:
         run: npm install
 
       - name: Build macOS app
-        run: npx electron-builder --mac dir --publish never
+        run: npx electron-builder --mac dir --x64 --publish never
 
       - name: Zip app
         run: |
           cd dist/mac
-          ditto -c -k --sequesterRsrc --keepParent CraftLauncher.app ../../CraftLauncher-mac-portable.zip
+          ditto -c -k --sequesterRsrc --keepParent CraftLauncher.app ../CraftLauncher-mac-portable-x64.zip
 
       - name: Upload portable app
         uses: actions/upload-artifact@v4
         with:
-          name: craftlauncher-mac-portable
-          path: CraftLauncher-mac-portable.zip
+          name: craftlauncher-mac-portable-x64
+          path: dist/CraftLauncher-mac-portable-x64.zip
